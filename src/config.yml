@@ -1,3 +1,19 @@
+prizelists:
+  - rocks:
+# With 70% probability, the player gets 10 diorite, 10 andesite, and 20 granite.
+# With 20% probability, the player gets a stack of bricks
+# 9% for 5 obsidian
+# 1% for 1 bedrock
+# The numbers don't have to add up to 100, they're just relative frequencies of occurence
+    - stones: "70 1:3(10) 1:5(10) 1:1(20)"
+    - bricks: "20 45(64)"
+    - obsidian: "9 49(5)"
+    - bedrock: "1 7(1)"
+  - gems:
+# 1 in 5 cases gives the player 5 emeralds, 3 in 5 cases is one diamond, and 1 in 5 is $1000:
+    - emerald: "1 388(5)"
+    - diamond: "3 264(1)"
+    - money: "1 0(1000)"
 gamemodes:
   - default:
       delay: 1200                # seconds between questions - 20 minutes
@@ -30,21 +46,3 @@ gamemodes:
       # copy most of event's stuff ...
       # You can omit this section and start the easter event with "/knowledge mode event easterquestions.txt".
       filepattern: easterquestions.txt
-
-prizelists:
-  - rocks:
-# With 70% probability, the player gets 10 diorite, 10 andesite, and 20 granite.
-# With 20% probability, the player gets a stack of bricks
-# 9% for 5 obsidian
-# 1% for 1 bedrock
-# The numbers don't have to add up to 100, they're just relative frequencies of occurence
-# The name tags are just for readability and not used by the system
-    - rocks: "70 1:3(10) 1:5(10) 1:1(20)"
-    - bricks: "20 45(64)"
-    - obsidian: "9 49(5)"
-    - bedrock: "1 7(1)"
-  - gems:
-# 1 in 5 cases gives the player 5 emeralds, 3 in 5 cases is one diamond, and 1 in 5 is $1000:
-    - emerald: "1 388(5)"
-    - diamond: "3 264(1)"
-    - money: "1 0(1000)"
