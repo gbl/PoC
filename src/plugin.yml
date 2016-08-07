@@ -1,0 +1,14 @@
+## YAML Template.
+name: PursuitOfKnowledge
+main: de.guntram.bukkit.pursuitofknowledge.PoK
+version: 0.01
+commands:
+    ans:
+        description: Answer the last question.
+        usage: /ans <text>
+        permission: PoK.answer
+        permission-message: No right to answer
+    pok:
+        description: Manage the PoK plugin
+        usage: /pok stats|answer|mode <modename> (<filename>)|reload
+        permission: PoK.admin

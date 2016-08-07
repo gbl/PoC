@@ -5,8 +5,14 @@
  */
 package de.guntram.bukkit.pursuitofknowledge;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
@@ -28,13 +34,15 @@ public class PrizeList {
         this.init(name);
     }
 
-    PrizeList(String name, ConfigurationSection alternatives) {
+    PrizeList(String name, List<Map> entries, Logger logger) {
         this.init(name);
-        Set<String> prizeNames=alternatives.getKeys(false);
-        for (String prizeName:prizeNames) {
-            String prizeDescriptor=alternatives.getString(prizeName);
-            Prize prize=new Prize(prizeDescriptor);
-            this.add(prize);
+        
+        for (Map entry:entries) {
+            for (Object prizeDescriptor:entry.values()) {
+                logger.log(Level.WARNING, "adding prize: {0}", new Object[]{prizeDescriptor});
+                Prize prize=new Prize((String) prizeDescriptor);
+                this.add(prize);
+            }
         }
     }
     

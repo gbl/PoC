@@ -6,7 +6,7 @@
 package de.guntram.bukkit.pursuitofknowledge;
 
 import java.util.Map;
-import org.bukkit.configuration.ConfigurationSection;
+import java.util.logging.Logger;
 
 /**
  *
@@ -34,22 +34,44 @@ public class GameMode {
     private boolean copyFromResolved;
     String disabledReason;
     
-    GameMode(ConfigurationSection section, String name) {
+    GameMode(String name, Map config, Logger logger) {
         this.name           = name;
-        delay               = section.getInt   ("delay");
-        answerTime          = section.getInt   ("answertime");
-        answerCount         = section.getInt   ("answercount");
-        filePattern         = section.getString("filepattern");
-        prefix              = section.getString("prefix");
-        nextGameMode        = section.getString("nextgamemode");
-        threshold           = section.getInt   ("threshold");
-        prizeList           = section.getString("prizelist");
-        numWinners          = section.getInt   ("numWinners");
-        startMessage        = section.getString("startmessage");
-        endMessage          = section.getString("endmessage");
-        itemMessage         = section.getString("itemmessage");
-        expireMessage       = section.getString("expiremessage");
-        copyFrom            = section.getString("copyfrom");
+        delay               = cfInt(   config.get("delay"));
+        answerTime          = cfInt(   config.get("answertime"));
+        answerCount         = cfInt(   config.get("answercount"));
+        filePattern         = cfString(config.get("filepattern"));
+        prefix              = cfString(config.get("prefix"), true);
+        nextGameMode        = cfString(config.get("nextgamemode"));
+        threshold           = cfInt(   config.get("threshold"));
+        prizeList           = cfString(config.get("prizelist"));
+        numWinners          = cfInt(   config.get("numWinners"));
+        startMessage        = cfString(config.get("startmessage"), true);
+        endMessage          = cfString(config.get("endmessage"), true);
+        itemMessage         = cfString(config.get("itemmessage"), true);
+        expireMessage       = cfString(config.get("expiremessage"), true);
+        copyFrom            = cfString(config.get("copyfrom"));
+    }
+    
+    private int cfInt(Object s) {
+        try {
+            return Integer.parseInt(s.toString());
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+    
+    private String cfString(Object s) {
+        return cfString(s, false);
+    }
+
+    private String cfString(Object s, boolean translateColors) {
+        if (s==null)
+            return null;
+        String result=s.toString();
+        if (translateColors) {
+            result=result.replace('&', '§');
+        }
+        return result;
     }
     
     public boolean isDisabled() {
@@ -115,5 +137,23 @@ public class GameMode {
         else if (prizes.get(prizeList)==null) {
                                     disabledReason="prize list "+prizeList+" nonexistent";
         }
+    }
+    
+    @Override
+    public String toString() {
+        return "gamemode "          +name               +":"+
+                "delay: "           +delay              +", "+
+                "answertime: "      +answerTime         +", "+
+                "answercount: "     +answerCount        +", "+
+                "filepattern: "     +filePattern        +", "+
+                "prefix: "          +prefix             +", "+
+                "nextgamemode: "    +nextGameMode       +", "+
+                "threshold: "       +threshold          +", "+
+                "prizelist: "       +prizeList          +", "+
+                "numwinners: "      +numWinners         +", "+
+                "startmessage: "    +startMessage       +", "+
+                "endmessage: "      +endMessage         +", "+
+                "itemmessage: "     +itemMessage        +", "+
+                "expiremessage: "   +expireMessage      +".";
     }
 }

@@ -16,11 +16,11 @@ prizelists:
     - money: "1 0(1000)"
 gamemodes:
   - default:
-      delay: 1200                # seconds between questions - 20 minutes
-      answertime: 60             # seconds to answer, if noone answers within this time the question expires
+      delay: 120                 # seconds between questions - 2 minutes
+      answertime: 30             # seconds to answer, if noone answers within this time the question expires
       answercount: 1             # Only the first player who answers gets a score point
       filepattern: default*.txt  # Cycle between all files that are named "default*"
-      prefix: &5                 # Use dark purple for questions
+      prefix: "&5"               # Use dark purple for questions
       nextgamemode: default      # After finishing a round, restart the same game mode
       threshold: 1               # Give a prize to the "winning" player after every question
       prizelist: rocks
@@ -28,11 +28,11 @@ gamemodes:
       itemmessage: "The correct answer was %answer%. %playerlist% gets a box of rocks."
       expiremessage: "Noone found the answer, which was %answer%."
   - event:
-      delay: 200
+      delay: 20
       answertime: 10             # people are expected to respond much faster here
       answercount: 3             # The 3 first players to answer get a score point each
       filepattern: event*.txt    # use one of a special set of questions/answers
-      prefix: &b                 # ask questions in Aqua
+      prefix: "&b"               # ask questions in Aqua
       nextgamemode: default      # Go to default mode after finishing a q/a file
       threshold: all             # Give a prize to the player(s) who has/have the highest score after all questions
       prizelist: gems
@@ -44,5 +44,6 @@ gamemodes:
       expiremessage: "How sad %answer% wasn't found by anyone."
   - easter:
       # copy most of event's stuff ...
+      copyfrom: event
       # You can omit this section and start the easter event with "/knowledge mode event easterquestions.txt".
       filepattern: easterquestions.txt
