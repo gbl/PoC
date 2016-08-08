@@ -199,12 +199,16 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     public void solve(String s) {
-        // TODO: use itemMessage and expiremessage somehow
-        Bukkit.broadcastMessage(getPrefix()+s);
+        Bukkit.broadcastMessage(getPrefix()+"The correct answer is: "+s);
         questionValid=false;
-        if (numAsked>=currentMode.threshold && scores.getEntries()>0) {
-            String[] winners=scores.bestPlayers(currentMode.numWinners);
-            reward(winners);
+        if (numAsked>=currentMode.threshold) {
+            if (scores.getEntries()>0) {
+                String[] winners=scores.bestPlayers(currentMode.numWinners);
+                // TODO: use itemMessage somehow instead of fixed string in reward
+                reward(winners);
+            } else {
+                Bukkit.broadcastMessage(currentMode.expireMessage);
+            }
             numAsked=0;
             scores=new Scoreboard();
         }
@@ -272,7 +276,10 @@ public class PoK extends JavaPlugin implements Listener {
             else if (i<players.length-2)
                 message.append(", ");
         }
-        message.append(" get a "+currentMode.prizeList+" prize each");
+        if (players.length==1)
+            message.append(" gets a "+currentMode.prizeList+" prize");
+        else
+            message.append(" get a "+currentMode.prizeList+" prize each");
         Bukkit.broadcastMessage(getPrefix()+message);
     }
     
@@ -295,11 +302,11 @@ public class PoK extends JavaPlugin implements Listener {
                 tempAnswer.append(' ');
         }
         String answer=tempAnswer.toString();
-        sender.sendMessage("checking '"+answer+"' as answer");
         String message;
+        message="'"+answer+"' is '";
         boolean correct=qaList.checkAnswer(answer);
         if (correct) {
-            message="Correct. ";
+            message+="Correct. ";
             if (questionValid && numAnswers<currentMode.answerCount) {
                 message+=" You get a score point.";
                 numAnswers++;
@@ -310,7 +317,7 @@ public class PoK extends JavaPlugin implements Listener {
                 message+=" But unfortunately, too late.";
             }
         } else {
-            message="Wrong. Sorry.";
+            message+="Wrong. Sorry.";
             if (!questionValid) {
                 message=message+" And too late as well.";
             }
