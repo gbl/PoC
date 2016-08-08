@@ -33,17 +33,24 @@ class ReturnCode {
 
 public class PoK extends JavaPlugin implements Listener {
     
-    Map<String, GameMode> gameModes;
+    private Map<String, GameMode> gameModes;
     private GameMode currentMode;
-    Map<String, PrizeList> prizeLists;
-    QAList qaList;
-    FileConfiguration config;
-    Logger logger;
+    private Map<String, PrizeList> prizeLists;
+    private QAList qaList;
+    private FileConfiguration config;
+    private Logger logger;
     private int scheduledTask;
-    private final int ticksPerMinute=3;     // correct: 20
+    private final int ticksPerMinute=20;    // correct: 20
+    private boolean questionValid;
+    private Scoreboard scores;
+    private int numAnswers;                 // how many answers for the current question?
+    private int numAsked;                   // how many questions where asked in the current scoreboard?
 
     @Override
     public void onEnable() {
+        scheduledTask=-1;
+        questionValid=false;
+
         logger=getLogger();
         saveDefaultConfig();
         copySampleFiles();
@@ -56,7 +63,6 @@ public class PoK extends JavaPlugin implements Listener {
 
         loadPrizes();
         loadGameModes();
-        scheduledTask=-1;
         startGameMode("default");
     }
     
@@ -72,6 +78,15 @@ public class PoK extends JavaPlugin implements Listener {
                }
                return true;
             }
+            
+            if (args.length==1 && args[0].equalsIgnoreCase("stats")) {
+                giveStats(sender);
+                return true;
+            }
+        }
+        if (commandName.equalsIgnoreCase("ans")) {
+            handleAnswer(sender, args);
+            return true;
         }
         return false;
     }
@@ -158,6 +173,8 @@ public class PoK extends JavaPlugin implements Listener {
         //Bukkit.broadcast(getPrefix()+currentMode.startMessage, "poc.answer."+modeName);
         Bukkit.broadcastMessage(getPrefix()+currentMode.startMessage);
         
+        numAsked=0;
+        scores=new Scoreboard();
         scheduleNextAsker();
         return new ReturnCode(true, "");
     }
@@ -170,8 +187,27 @@ public class PoK extends JavaPlugin implements Listener {
         scheduledTask = getServer().getScheduler().scheduleSyncDelayedTask(this, new Asker(this), currentMode.delay*ticksPerMinute);
     }
     
-    public void scheduleNextSolutionGiver() {
-        scheduledTask=getServer().getScheduler().scheduleSyncDelayedTask(this, new SolutionGiver(this), currentMode.answerTime*ticksPerMinute);
+    public void scheduleNextAnswerGiver() {
+        scheduledTask=getServer().getScheduler().scheduleSyncDelayedTask(this, new Solver(this), currentMode.answerTime*ticksPerMinute);
+    }
+    
+    public void ask(String s) {
+        Bukkit.broadcastMessage(getPrefix()+s);
+        questionValid=true;
+        numAnswers=0;
+        numAsked++;
+    }
+    
+    public void solve(String s) {
+        // TODO: use itemMessage and expiremessage somehow
+        Bukkit.broadcastMessage(getPrefix()+s);
+        questionValid=false;
+        if (numAsked>=currentMode.threshold && scores.getEntries()>0) {
+            String[] winners=scores.bestPlayers(currentMode.numWinners);
+            reward(winners);
+            numAsked=0;
+            scores=new Scoreboard();
+        }
     }
     
     public void cancelGame() {
@@ -183,6 +219,10 @@ public class PoK extends JavaPlugin implements Listener {
     
     public String getPrefix() {
         return currentMode.prefix;
+    }
+    
+    public QAList getQAList() {
+        return qaList;
     }
 
     private File findMatchingFile(String filePattern) {
@@ -196,8 +236,10 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     private void copySampleFiles() {
+        // TODO: search jar for *.txt and copy all of them
         copySampleFile("default1.txt");
         copySampleFile("event-halloween.txt");
+        copySampleFile("test.txt");
     }
     
     private void copySampleFile(String name) {
@@ -218,5 +260,61 @@ public class PoK extends JavaPlugin implements Listener {
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-    }      
+    }
+    
+    private void reward(String[] players) {
+        StringBuilder message=new StringBuilder(""+
+                players.length+" winners: ");
+        for (int i=0; i<players.length; i++) {
+            message.append(players[i]);
+            if (i==players.length-2)
+                message.append(" and ");
+            else if (i<players.length-2)
+                message.append(", ");
+        }
+        message.append(" get a "+currentMode.prizeList+" prize each");
+        Bukkit.broadcastMessage(getPrefix()+message);
+    }
+    
+    private void giveStats(CommandSender sender) {
+        sender.sendMessage("Running mode "+currentMode.name);
+        sender.sendMessage("Prize "+currentMode.prizeList+" given after "+currentMode.threshold+" questions, current: "+numAsked);
+        sender.sendMessage("A maximum of "+currentMode.answerCount+" players get a score point, current: "+numAnswers);
+        sender.sendMessage(""+currentMode.numWinners+" will win a prize");
+        sender.sendMessage("current scores: "+scores.toString());
+    }
+    
+    // TODO: prevent a player from answering twice to the same question
+    // maybe: allow them to correct themselves (gamemode option?)
+    // but never allow more than 1 correct answer
+    private void handleAnswer(CommandSender sender, String[] args) {
+        StringBuilder tempAnswer=new StringBuilder();
+        for (int i=0; i<args.length; i++) {
+            tempAnswer.append(args[i]);
+            if (i!=args.length-1)
+                tempAnswer.append(' ');
+        }
+        String answer=tempAnswer.toString();
+        sender.sendMessage("checking '"+answer+"' as answer");
+        String message;
+        boolean correct=qaList.checkAnswer(answer);
+        if (correct) {
+            message="Correct. ";
+            if (questionValid && numAnswers<currentMode.answerCount) {
+                message+=" You get a score point.";
+                numAnswers++;
+                scores.awardPointTo(sender.getName());
+            } else if (questionValid) {
+                message+=" But unfortunately, too many players were faster than you.";
+            } else {
+                message+=" But unfortunately, too late.";
+            }
+        } else {
+            message="Wrong. Sorry.";
+            if (!questionValid) {
+                message=message+" And too late as well.";
+            }
+        }
+        sender.sendMessage(message);
+    }
 }

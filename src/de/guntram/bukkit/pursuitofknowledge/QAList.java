@@ -8,20 +8,60 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class QA {
-    String question;
-    String answer;
-    boolean wasUsed;
+    private String question;
+    private String answer;
+    private boolean used;
+    
+    QA(String q) {
+        question=q;
+        answer="unknown";
+        used=false;
+    }
+    QA(String q, String a) {
+        question=q;
+        answer=a;
+        used=false;
+    }
+    
+    void setQuestion(String s) { question=s; }
+    void setAnswer(String s)   { answer=s;   }
+    void setUsed()             { used=true; }
+    
+    String getQuestion() { return question; }
+    String getAnswer()   { return answer; }
+    boolean wasUsed()    { return used; }
+    
+    String getShowableAnswer() {
+        int pos;
+        if ((pos=answer.indexOf('|'))>0) {
+            return answer.substring(0, pos);
+        } else {
+            return answer;
+        }
+    }
 }
 
+/**
+ *
+ * @author gbl
+ */
 public class QAList {
 
-    String inputFileName;
-    List<QA> entries;
-    int currentQuestion;
-    final Logger logger;
+    private String inputFileName;
+    private List<QA> entries;
+    private int currentQuestion;
+    private final Logger logger;
+    private Pattern curPattern;
     
+    /**
+     *
+     * @param file
+     * @param logger
+     */
     public QAList(File file, Logger logger) {
         this.logger=logger;
         inputFileName=file.getName();
@@ -38,14 +78,12 @@ public class QAList {
                     continue;
                 if (expectAnswer) {
                     logger.fine("Saving answer "+line);
-                    qa.answer=line;
-                    qa.wasUsed=false;
+                    qa.setAnswer(line);
                     entries.add(qa);
                     expectAnswer=false;
                 } else {
                     logger.fine("got question "+line);
-                    qa=new QA();
-                    qa.question=line;
+                    qa=new QA(line);
                     expectAnswer=true;
                 }
             }
@@ -62,6 +100,9 @@ public class QAList {
         logger.info("Have "+entries.size()+" QA entries");
     }
     
+    /**
+     *
+     */
     public void randomize() {
         List<QA> newEntries=new ArrayList<QA>(entries.size());
         while (entries.size()>0) {
@@ -72,19 +113,48 @@ public class QAList {
         entries=newEntries;
     }
     
+    /**
+     *
+     * @return
+     */
     public QA nextQA() {
+        curPattern=null;
         logger.info("nextQA: currentquestion="+currentQuestion+" and have "+entries.size()+"entries");
         currentQuestion++;
-        if (currentQuestion>=entries.size())
+        if (currentQuestion>=entries.size()) {
+            curPattern=null;
             return null;
-        entries.get(currentQuestion).wasUsed=true;
+        }
+        entries.get(currentQuestion).setUsed();
+        curPattern=Pattern.compile(entries.get(currentQuestion).getAnswer());
         return entries.get(currentQuestion);
     }
     
+    /**
+     *
+     * @return
+     */
     public QA currentQA() {
         return entries.get(currentQuestion);
     }
     
+    /**
+     *
+     * @param answer
+     * @return
+     */
+    public boolean checkAnswer(String answer) {
+        if (curPattern==null)
+            return false;
+        Matcher m=curPattern.matcher(answer);
+        // do not use matches() here, we want to match a part only, not the whole input.
+        return m.find();
+    }
+    
+    /**
+     *
+     * @return
+     */
     public boolean hasMoreQuestions() {
         return currentQuestion < entries.size()-1;
     }

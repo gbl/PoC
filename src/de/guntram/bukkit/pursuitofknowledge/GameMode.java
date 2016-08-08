@@ -13,6 +13,12 @@ import java.util.logging.Logger;
  * @author gbl
  */
 public class GameMode {
+    
+    /**
+     *
+     */
+    public static final int allThreshold=99999;
+    
     String name;
     int delay;
     int answerTime;
@@ -50,6 +56,9 @@ public class GameMode {
         itemMessage         = cfString(config.get("itemmessage"), true);
         expireMessage       = cfString(config.get("expiremessage"), true);
         copyFrom            = cfString(config.get("copyfrom"));
+        
+        if (threshold==0 && "all".equals(config.get("threshold")))
+            threshold=allThreshold;
     }
     
     private int cfInt(Object s) {
@@ -74,6 +83,10 @@ public class GameMode {
         return result;
     }
     
+    /**
+     *
+     * @return
+     */
     public boolean isDisabled() {
         return disabledReason!=null;
     }

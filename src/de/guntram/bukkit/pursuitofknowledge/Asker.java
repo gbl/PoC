@@ -24,17 +24,17 @@ public class Asker implements Runnable {
         // This should not happen as this is handled in SolutionGiver.
         // But to make sure no problems happen with empty QAlists, handle
         // it here as well.
-        if (!plugin.qaList.hasMoreQuestions()) {
+        if (!plugin.getQAList().hasMoreQuestions()) {
             plugin.nextGameMode();
             return;
         }
-        QA qa=plugin.qaList.nextQA();
+        QA qa=plugin.getQAList().nextQA();
         if (qa==null) {
             Bukkit.broadcastMessage("nextQA returned null??");
         } else {
             // Bukkit.broadcast(qa.question, "poc.answer");
-            Bukkit.broadcastMessage(plugin.getPrefix()+qa.question);
+            plugin.ask(qa.getQuestion()+" §7("+qa.getShowableAnswer()+")");
         }
-        plugin.scheduleNextSolutionGiver();
+        plugin.scheduleNextAnswerGiver();
     }
 }
