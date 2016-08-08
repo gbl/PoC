@@ -3,14 +3,14 @@ According to recently released statistics, how much did the average American fam
 Which candy was originally called chicken feed?
 candy corn|candycorn
 What might you "bob" for on Halloween?
-apples|an apple
+apples|apple
 Which country is credited with being the founder of Halloween?
 ireland
 Which two colors are associated with Halloween?
-orange black|black orange
+orange black|black.*orange|orange.*black
 When do Mexicans celebrate the "Day of the Dead"?
 november 1|november first|first of november|11-1
 What was the name of the Lord of the Dead who, according to the Celts, traveled on Halloween?
 samhain
-If you want to keep spirits out of your home on Halloween, what should yousprinkle on the doorstep?
+If you want to keep spirits out of your home on Halloween, what should you sprinkle on the doorstep?
 salt

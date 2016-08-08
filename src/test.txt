@@ -1,0 +1,17 @@
+# This is a dummy file to test the plugin.
+Please type the number one.
+1
+Please type a two.
+2
+Please type a three.
+3
+Please type a four.
+4
+Please type a five.
+5
+Please type a six.
+6
+Please type a seven.
+7
+Please type a eight.
+8
