@@ -25,8 +25,7 @@ public class Solver implements Runnable {
         // Bukkit.broadcast(qa.answer, "poc.answer");
         plugin.solve(qa.getShowableAnswer());
         if (!plugin.getQAList().hasMoreQuestions()) {
-            // TODO: use endmessage somehow, and give prizes. SHould be
-            // a method in plugin that gets called from here.
+            plugin.distributePrizes();
             plugin.nextGameMode();
         } else {
             plugin.scheduleNextAsker();

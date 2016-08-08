@@ -199,21 +199,28 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     public void solve(String s) {
-        Bukkit.broadcastMessage(getPrefix()+"The correct answer is: "+s);
+        if (numAnswers==0) {
+            Bukkit.broadcastMessage(currentMode.expireMessage);
+        } else {
+            Bukkit.broadcastMessage(currentMode.itemMessage);
+        }
         questionValid=false;
         if (numAsked>=currentMode.threshold) {
-            if (scores.getEntries()>0) {
-                String[] winners=scores.bestPlayers(currentMode.numWinners);
-                // TODO: use itemMessage somehow instead of fixed string in reward
-                reward(winners);
-            } else {
-                Bukkit.broadcastMessage(currentMode.expireMessage);
-            }
-            numAsked=0;
-            scores=new Scoreboard();
+            distributePrizes();
         }
     }
     
+    public void distributePrizes() {
+        if (scores.getEntries()>0) {
+            String[] winners=scores.bestPlayers(currentMode.numWinners);
+            reward(winners);
+        } else {
+            Bukkit.broadcastMessage("Noone won anything this round");
+        }
+        numAsked=0;
+        scores=new Scoreboard();
+    }
+
     public void cancelGame() {
         if (scheduledTask!=-1) {
             getServer().getScheduler().cancelTask(scheduledTask);
