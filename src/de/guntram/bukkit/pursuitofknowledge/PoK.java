@@ -169,7 +169,8 @@ public class PoK extends JavaPlugin implements Listener {
         }
         logger.info("Using input file "+inputFile+" to start mode "+modeName);
         qaList=new QAList(inputFile, logger);
-        qaList.randomize();
+        if (currentMode.wantsRandomize())
+            qaList.randomize();
         //Bukkit.broadcast(getPrefix()+currentMode.startMessage, "poc.answer."+modeName);
         Bukkit.broadcastMessage(getPrefix()+currentMode.startMessage);
         
@@ -310,7 +311,7 @@ public class PoK extends JavaPlugin implements Listener {
         }
         String answer=tempAnswer.toString();
         String message;
-        message="'"+answer+"' is '";
+        message="'"+answer+"' is ";
         boolean correct=qaList.checkAnswer(answer);
         if (correct) {
             message+="Correct. ";

@@ -75,3 +75,4 @@ gamemodes:
       answercount: 1
       threshold: 3
       startmessage: "starting test event 2 - 1 answer per question, prize after each 3"
+      randomize: no
