@@ -23,8 +23,10 @@ public class GameMode {
     int delay;
     int answerTime;
     int answerCount;
+    String allow2ndTry;
     String filePattern;
     String prefix;
+    String questionPrefix;
     String nextGameMode;
     int threshold;
     String prizeList;
@@ -46,8 +48,10 @@ public class GameMode {
         delay               = cfInt(   config.get("delay"));
         answerTime          = cfInt(   config.get("answertime"));
         answerCount         = cfInt(   config.get("answercount"));
+        allow2ndTry         = cfString(config.get("allow2ndtry"));
         filePattern         = cfString(config.get("filepattern"));
         prefix              = cfString(config.get("prefix"), true);
+        questionPrefix      = cfString(config.get("questionprefix"), true);
         nextGameMode        = cfString(config.get("nextgamemode"));
         threshold           = cfInt(   config.get("threshold"));
         prizeList           = cfString(config.get("prizelist"));
@@ -94,6 +98,14 @@ public class GameMode {
     }
     
     public boolean wantsRandomize() {
+        return isTruthy(randomize);
+    }
+    
+    public boolean allowRetry() {
+        return isTruthy(allow2ndTry);
+    }
+    
+    private boolean isTruthy(String s) {
         return
                 !randomize.startsWith("n")
           &&    !randomize.startsWith("f")
@@ -125,8 +137,10 @@ public class GameMode {
         if (delay==0)               delay           = template.delay;
         if (answerTime==0)          answerTime      = template.answerTime;
         if (answerCount==0)         answerCount     = template.answerCount;
+        if (allow2ndTry==null)      allow2ndTry     = template.allow2ndTry;
         if (filePattern==null)      filePattern     = template.filePattern;
         if (prefix==null)           prefix          = template.prefix;
+        if (questionPrefix==null)   questionPrefix  = template.questionPrefix;
         if (nextGameMode==null)     nextGameMode    = template.nextGameMode;
         if (threshold==0)           threshold       = template.threshold;
         if (prizeList==null)        prizeList       = template.prizeList;
@@ -146,6 +160,7 @@ public class GameMode {
         if (delay==0)               delay           = 1200;
         if (answerTime==0)          answerTime      = 60;
         if (answerCount==0)         answerCount     = 1;
+        if (allow2ndTry==null)      allow2ndTry     = "yes";
         if (prefix==null)           prefix          = "";
         if (nextGameMode==null)     nextGameMode    = name;
         if (threshold==0)           threshold       = 1;
@@ -171,6 +186,7 @@ public class GameMode {
                 "answercount: "     +answerCount        +", "+
                 "filepattern: "     +filePattern        +", "+
                 "prefix: "          +prefix             +", "+
+                "questionprefix: "  +questionPrefix     +", "+
                 "nextgamemode: "    +nextGameMode       +", "+
                 "threshold: "       +threshold          +", "+
                 "prizelist: "       +prizeList          +", "+

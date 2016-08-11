@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ public class PoK extends JavaPlugin implements Listener {
     private Scoreboard scores;
     private int numAnswers;                 // how many answers for the current question?
     private int numAsked;                   // how many questions where asked in the current scoreboard?
+    private Set answerers;
 
     @Override
     public void onEnable() {
@@ -81,6 +83,27 @@ public class PoK extends JavaPlugin implements Listener {
             
             if (args.length==1 && args[0].equalsIgnoreCase("stats")) {
                 giveStats(sender);
+                return true;
+            }
+            
+            if (args.length==1 && (
+                    args[0].equalsIgnoreCase("answer") || args[0].equalsIgnoreCase("lq"))
+            ) {
+                if (sender.hasPermission("pok.seeanswer")) {
+                    QA qa=qaList.currentQA();
+                    if (qa!=null) {
+                        String a, sa;
+                        sender.sendMessage("Last question was: "+qa.getQuestion());
+                        sender.sendMessage("The answer is: "+(sa=qa.getShowableAnswer()));
+                        if (!sa.equals(a=qa.getAnswer())) {
+                            sender.sendMessage("Full answer expression is "+a);
+                        }
+                    } else {
+                        sender.sendMessage("There is no current question");
+                    }
+                } else {
+                    sender.sendMessage("You're lacking the pok.seeanswer permission");
+                }
                 return true;
             }
         }
@@ -193,17 +216,18 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     public void ask(String s) {
-        Bukkit.broadcastMessage(getPrefix()+s);
+        Bukkit.broadcastMessage(getPrefix()+currentMode.questionPrefix+s);
         questionValid=true;
         numAnswers=0;
         numAsked++;
+        answerers=new HashSet();
     }
     
     public void solve(String s) {
         if (numAnswers==0) {
-            Bukkit.broadcastMessage(currentMode.expireMessage);
+            Bukkit.broadcastMessage(getPrefix()+currentMode.expireMessage);
         } else {
-            Bukkit.broadcastMessage(currentMode.itemMessage);
+            Bukkit.broadcastMessage(getPrefix()+currentMode.itemMessage);
         }
         questionValid=false;
         if (numAsked>=currentMode.threshold) {
@@ -216,7 +240,7 @@ public class PoK extends JavaPlugin implements Listener {
             String[] winners=scores.bestPlayers(currentMode.numWinners);
             reward(winners);
         } else {
-            Bukkit.broadcastMessage("Noone won anything this round");
+            Bukkit.broadcastMessage(getPrefix()+"Noone won anything this round");
         }
         numAsked=0;
         scores=new Scoreboard();
@@ -294,8 +318,8 @@ public class PoK extends JavaPlugin implements Listener {
     private void giveStats(CommandSender sender) {
         sender.sendMessage("Running mode "+currentMode.name);
         sender.sendMessage("Prize "+currentMode.prizeList+" given after "+currentMode.threshold+" questions, current: "+numAsked);
-        sender.sendMessage("A maximum of "+currentMode.answerCount+" players get a score point, current: "+numAnswers);
-        sender.sendMessage(""+currentMode.numWinners+" will win a prize");
+        sender.sendMessage("A maximum of "+currentMode.answerCount+" player(s) get a score point, current: "+numAnswers);
+        sender.sendMessage(""+currentMode.numWinners+" player(s) will win a prize");
         sender.sendMessage("current scores: "+scores.toString());
     }
     
@@ -303,6 +327,11 @@ public class PoK extends JavaPlugin implements Listener {
     // maybe: allow them to correct themselves (gamemode option?)
     // but never allow more than 1 correct answer
     private void handleAnswer(CommandSender sender, String[] args) {
+        String name=sender.getName();
+        if (answerers.contains(name)) {
+            sender.sendMessage("You already answered this question.");
+            return;
+        }
         StringBuilder tempAnswer=new StringBuilder();
         for (int i=0; i<args.length; i++) {
             tempAnswer.append(args[i]);
@@ -311,21 +340,24 @@ public class PoK extends JavaPlugin implements Listener {
         }
         String answer=tempAnswer.toString();
         String message;
-        message="'"+answer+"' is ";
+        message=getPrefix()+"'"+answer+"' is ";
         boolean correct=qaList.checkAnswer(answer);
         if (correct) {
-            message+="Correct. ";
+            answerers.add(name);
+            message+="correct. ";
             if (questionValid && numAnswers<currentMode.answerCount) {
                 message+=" You get a score point.";
                 numAnswers++;
-                scores.awardPointTo(sender.getName());
+                scores.awardPointTo(name);
             } else if (questionValid) {
                 message+=" But unfortunately, too many players were faster than you.";
             } else {
                 message+=" But unfortunately, too late.";
             }
         } else {
-            message+="Wrong. Sorry.";
+            if (!currentMode.allowRetry())
+                answerers.add(name);
+            message+="wrong. Sorry.";
             if (!questionValid) {
                 message=message+" And too late as well.";
             }

@@ -126,7 +126,11 @@ public class QAList {
             return null;
         }
         entries.get(currentQuestion).setUsed();
-        curPattern=Pattern.compile(entries.get(currentQuestion).getAnswer());
+        String answer=entries.get(currentQuestion).getAnswer();
+        if (!answer.equals(answer.toLowerCase()))
+            curPattern=Pattern.compile(answer);
+        else
+            curPattern=Pattern.compile(answer, Pattern.CASE_INSENSITIVE);
         return entries.get(currentQuestion);
     }
     
@@ -135,6 +139,8 @@ public class QAList {
      * @return
      */
     public QA currentQA() {
+        if (currentQuestion<0)
+            return null;
         return entries.get(currentQuestion);
     }
     
