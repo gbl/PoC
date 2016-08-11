@@ -32,6 +32,16 @@ class ReturnCode {
     }
 }
 
+class Pair {
+    String part1;
+    String part2;
+    
+    Pair(String s1, String s2) {
+        part1=s1;
+        part2=s2;
+    }
+}
+
 public class PoK extends JavaPlugin implements Listener {
     
     private Map<String, GameMode> gameModes;
@@ -46,7 +56,8 @@ public class PoK extends JavaPlugin implements Listener {
     private Scoreboard scores;
     private int numAnswers;                 // how many answers for the current question?
     private int numAsked;                   // how many questions where asked in the current scoreboard?
-    private Set answerers;
+    private Set<String> correctAnswers;
+    private List<Pair> wrongAnswers;
 
     @Override
     public void onEnable() {
@@ -97,6 +108,9 @@ public class PoK extends JavaPlugin implements Listener {
                         sender.sendMessage("The answer is: "+(sa=qa.getShowableAnswer()));
                         if (!sa.equals(a=qa.getAnswer())) {
                             sender.sendMessage("Full answer expression is "+a);
+                        }
+                        for (Pair p: wrongAnswers) {
+                            sender.sendMessage(p.part1+" wrongly answered '"+p.part2+"'");
                         }
                     } else {
                         sender.sendMessage("There is no current question");
@@ -220,7 +234,8 @@ public class PoK extends JavaPlugin implements Listener {
         questionValid=true;
         numAnswers=0;
         numAsked++;
-        answerers=new HashSet();
+        correctAnswers=new HashSet();
+        wrongAnswers=new ArrayList();
     }
     
     public void solve(String s) {
@@ -328,7 +343,11 @@ public class PoK extends JavaPlugin implements Listener {
     // but never allow more than 1 correct answer
     private void handleAnswer(CommandSender sender, String[] args) {
         String name=sender.getName();
-        if (answerers.contains(name)) {
+        if (correctAnswers==null) {
+            sender.sendMessage("There is no question pending!");
+            return;
+        }
+        if (correctAnswers.contains(name)) {
             sender.sendMessage("You already answered this question.");
             return;
         }
@@ -343,7 +362,7 @@ public class PoK extends JavaPlugin implements Listener {
         message=getPrefix()+"'"+answer+"' is ";
         boolean correct=qaList.checkAnswer(answer);
         if (correct) {
-            answerers.add(name);
+            correctAnswers.add(name);
             message+="correct. ";
             if (questionValid && numAnswers<currentMode.answerCount) {
                 message+=" You get a score point.";
@@ -356,7 +375,8 @@ public class PoK extends JavaPlugin implements Listener {
             }
         } else {
             if (!currentMode.allowRetry())
-                answerers.add(name);
+                correctAnswers.add(name);
+            wrongAnswers.add(new Pair(name, answer));
             message+="wrong. Sorry.";
             if (!questionValid) {
                 message=message+" And too late as well.";
