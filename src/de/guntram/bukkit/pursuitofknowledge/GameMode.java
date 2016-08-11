@@ -32,6 +32,7 @@ public class GameMode {
     String prizeList;
     int numWinners;
     String randomize;
+    String scramble;
     String startMessage;
     String endMessage;
     String itemMessage;
@@ -57,6 +58,7 @@ public class GameMode {
         prizeList           = cfString(config.get("prizelist"));
         numWinners          = cfInt(   config.get("numWinners"));
         randomize           = cfString(config.get("randomize"));
+        scramble            = cfString(config.get("scramble"));
         startMessage        = cfString(config.get("startmessage"), true);
         endMessage          = cfString(config.get("endmessage"), true);
         itemMessage         = cfString(config.get("itemmessage"), true);
@@ -105,6 +107,14 @@ public class GameMode {
         return isTruthy(allow2ndTry);
     }
     
+    public boolean isLineScramble() {
+        return scramble.equalsIgnoreCase("line") || scramble.equalsIgnoreCase("row");
+    }
+    
+    public boolean isAllScramble() {
+        return scramble.equalsIgnoreCase("all");
+    }
+    
     private boolean isTruthy(String s) {
         return
                 !randomize.startsWith("n")
@@ -146,6 +156,7 @@ public class GameMode {
         if (prizeList==null)        prizeList       = template.prizeList;
         if (numWinners==0)          numWinners      = template.numWinners;
         if (randomize==null)        randomize       = template.randomize;
+        if (scramble==null)         scramble        = template.scramble;
         if (startMessage==null)     startMessage    = template.startMessage;
         if (endMessage==null)       endMessage      = template.endMessage;
         if (itemMessage==null)      itemMessage     = template.itemMessage;
@@ -166,6 +177,7 @@ public class GameMode {
         if (threshold==0)           threshold       = 1;
         if (numWinners==0)          numWinners      = 1;
         if (randomize==null)        randomize       = "yes";
+        if (scramble==null)         scramble        = "none";
         if (startMessage==null)     startMessage    = "";
         if (endMessage==null)       endMessage      = "";
         if (itemMessage==null)      itemMessage     = "";
@@ -192,6 +204,7 @@ public class GameMode {
                 "prizelist: "       +prizeList          +", "+
                 "numwinners: "      +numWinners         +", "+
                 "randomize: "       +randomize          +", "+
+                "scramble: "        +scramble           +", "+
                 "startmessage: "    +startMessage       +", "+
                 "endmessage: "      +endMessage         +", "+
                 "itemmessage: "     +itemMessage        +", "+

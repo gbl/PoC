@@ -205,7 +205,7 @@ public class PoK extends JavaPlugin implements Listener {
             return new ReturnCode(false, "File "+inputFile.getName()+" not found");
         }
         logger.info("Using input file "+inputFile+" to start mode "+modeName);
-        qaList=new QAList(inputFile, logger);
+        qaList=new QAList(inputFile, logger, currentMode);
         if (currentMode.wantsRandomize())
             qaList.randomize();
         //Bukkit.broadcast(getPrefix()+currentMode.startMessage, "poc.answer."+modeName);
@@ -291,6 +291,8 @@ public class PoK extends JavaPlugin implements Listener {
         copySampleFile("default1.txt");
         copySampleFile("event-halloween.txt");
         copySampleFile("test.txt");
+        copySampleFile("scrambleall.txt");
+        copySampleFile("scrambleline.txt");
     }
     
     private void copySampleFile(String name) {

@@ -49,6 +49,15 @@ gamemodes:
       copyfrom: event
       # You can omit this section and start the easter event with "/knowledge mode event easterquestions.txt".
       filepattern: easterquestions.txt
+  - scrambleall:
+      copyfrom: event
+      scramble: all             # "none" scrambles none, "marked" scrambles {..},
+                                # "all" means 1 line per question which is answer AND question(after scrambling)
+      filepattern: scrambleall*.txt
+  - scrambleline:
+      copyfrom: event
+      scramble: line
+      filepattern: scrambleline*.txt
 # This asks a question from the test file every 15 seconds, and gives the answer 
 # after another 30 seconds. This time should be enough to answer and do a 
 # /pok stats before and after the answer is shown.
