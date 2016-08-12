@@ -391,7 +391,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     @Override
     public String valueFor(String placeholder) {
         if ("answer".equals(placeholder) && qaList.currentQA()!=null) {
-            return qaList.currentQA().getAnswer();
+            return qaList.currentQA().getShowableAnswer();
         }
         if ("answercount".equals(placeholder)) {
             return Integer.toString(currentMode.answerCount);
