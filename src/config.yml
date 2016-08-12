@@ -17,33 +17,35 @@ prizelists:
 gamemodes:
   - default:
       delay: 120                 # seconds between questions - 2 minutes
-      answertime: 30             # seconds to answer, if noone answers within this time the question expires
+      answertime: 20             # seconds to answer, if noone answers within this time the question expires
       answercount: 1             # Only the first player who answers gets a score point
       filepattern: default*.txt  # Cycle between all files that are named "default*"
       prefix: "&5"               # all messages in dark purple
-      questionprefix: "&2Trivia Time! &6Use /ans to answer: &5"
       nextgamemode: default      # After finishing a round, restart the same game mode
       threshold: 1               # Give a prize to the "winning" player after every question
       prizelist: rocks
       numwinners: 1              # Only the "best" player wins a prize.
-      itemmessage: "The correct answer was %answer%. %playerlist% gets a box of rocks."
-      expiremessage: "Noone found the answer, which was %answer%."
+      questionmessage: "&2Trivia Time! &6Use /ans to answer: &5%question% &7(%answer%)"
+      itemmessage: "The correct answer was %answer%, found by %players%."
+      timeoutmessage: "Noone found the answer, which was %answer%."
+      rewardmessage: "%winners% get%winners.s% a box of %prizelist% each."
   - event:
       delay: 20
       answertime: 10             # people are expected to respond much faster here
       answercount: 3             # The 3 first players to answer get a score point each
       filepattern: event*.txt    # use one of a special set of questions/answers
       prefix: "&b"               # all messages in Aqua
-      questionprefix: "Trivia Event! "
       nextgamemode: default      # Go to default mode after finishing a q/a file
       threshold: all             # Give a prize to the player(s) who has/have the highest score after all questions
       prizelist: gems
       numwinners: 3              # The 3 best players get a prize each
-      numwinners: 10%            # Alternative: The best 10% of players get a prize each - TODO not implemented yet!
+      # numwinners: 10%            # Alternative: The best 10% of players get a prize each - TODO not implemented yet!
+      questionmessage: "Knowledge Event! %question% &7(%answer%)"
       startmessage: "Starting knowledge event."
-      endmessage: "Ending knowledge event. Gem prizes go to %playerlist%"
-      itemmessage: "%playerlist% found the correct answer %answer% first and get a point each"
-      expiremessage: "How sad %answer% wasn't found by anyone."
+      endmessage: "Ending knowledge event."
+      itemmessage: "%players% found the correct answer %answer% first and get%players.s% a point"
+      timeoutmessage: "How sad %answer% wasn't found by anyone."
+      rewardmessage: "&1Best players:\n%scoreboard%Gem prizes go to %winners%."
   - easter:
       # copy most of event's stuff ...
       copyfrom: event
@@ -66,7 +68,7 @@ gamemodes:
 # players win a prize each.
   - test1:
       delay: 15
-      answertime: 30
+      answertime: 10
       answercount: 3
       filepattern: test.txt
       prefix: "&e"
@@ -74,10 +76,12 @@ gamemodes:
       threshold: all
       prizelist: gems
       numwinners: 2
-      startmessage: "starting test event 1 - 3 answers per question, prize at end"
-      endmessage:   "ending test event 1"
-      itemmessage:  "&2answer %answer% found by %playerlist%"
-      expiremessage: "&canswer %answer% not found by anyone"
+      startmessage: "starting event %name% - first %answercount% answer%answercount.s% per question get a score point, prize to %numwinners% player%numwinners.s% after %threshold% questions"
+      endmessage:   "ending event %name%"
+      itemmessage:  "&2answer &d%answer% &2found by %players%"
+      timeoutmessage: "&canswer &d%answer% &cnot found by anyone"
+      rewardmessage: "rewarding %winners% with a box of %prizelist%"
+      norewardmessage: "No prizes this time"
   - test2:
 # In this test, only the fastest answer counts, and the best player(s) get a
 # prize after 3 questions. As there are 8 questions in the question file,
@@ -85,5 +89,8 @@ gamemodes:
       copyfrom: test1
       answercount: 1
       threshold: 3
-      startmessage: "starting test event 2 - 1 answer per question, prize after each 3"
       randomize: no
+  - test3:
+# This should get disabled, and /pok mode test3 should result in an error message.
+      copyfrom: test1
+      prizelist: undefined

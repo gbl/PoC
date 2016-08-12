@@ -111,9 +111,14 @@ public class Scoreboard {
     
     @Override
     public String toString() {
+        return toString("");
+    }
+    
+    public String toString(String prefix) {
         StringBuilder temp=new StringBuilder();
         for (Map.Entry<String, Integer> entry: data.entrySet()) {
-            temp.append(entry.getKey()).append(": ")
+            temp.append(prefix)
+                .append(entry.getKey()).append(": ")
                 .append(entry.getValue()).append("\n");
         }
         return temp.toString();

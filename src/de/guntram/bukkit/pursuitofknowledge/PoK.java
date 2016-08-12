@@ -22,16 +22,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-class ReturnCode {
-    boolean success;
-    String message;
-    
-    ReturnCode(boolean s, String m) {
-        success=s;
-        message=m;
-    }
-}
-
 class Pair {
     String part1;
     String part2;
@@ -42,8 +32,7 @@ class Pair {
     }
 }
 
-public class PoK extends JavaPlugin implements Listener {
-    
+public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     private Map<String, GameMode> gameModes;
     private GameMode currentMode;
     private Map<String, PrizeList> prizeLists;
@@ -52,11 +41,11 @@ public class PoK extends JavaPlugin implements Listener {
     private Logger logger;
     private int scheduledTask;
     private final int ticksPerMinute=20;    // correct: 20
-    private boolean questionValid;
+    private boolean questionValid;          // Can a question be answered rn, i.e. no timeout?
     private Scoreboard scores;
     private int numAnswers;                 // how many answers for the current question?
     private int numAsked;                   // how many questions where asked in the current scoreboard?
-    private Set<String> correctAnswers;
+    private Set<String> correctAnswerers;
     private List<Pair> wrongAnswers;
 
     @Override
@@ -71,7 +60,7 @@ public class PoK extends JavaPlugin implements Listener {
         config=getConfig();
         Set<String> temp=config.getKeys(true);
         for (String s: temp) {
-            logger.finer("config key: "+s+" issection? : "+config.isConfigurationSection(s));
+            logger.log(Level.FINER, "config key: {0} issection? : {1}", new Object[]{s, config.isConfigurationSection(s)});
         }
 
         loadPrizes();
@@ -136,12 +125,12 @@ public class PoK extends JavaPlugin implements Listener {
         for (Map<?,?> map:prizeMap) {
             logger.fine("parsing next prize map");
             for (Object listName:map.keySet()) {
-                logger.fine("parsing prize: "+listName);
-                logger.log(Level.FINE,"class is "+map.get(listName).getClass().getCanonicalName());
-                logger.log(Level.FINE,"value is "+map.get(listName));
+                logger.log(Level.FINE, "parsing prize: {0}", listName);
+                logger.log(Level.FINE, "class is {0}", map.get(listName).getClass().getCanonicalName());
+                logger.log(Level.FINE, "value is {0}", map.get(listName));
                 ArrayList x=(ArrayList)map.get(listName);
-                logger.log(Level.FINE,"element class is "+x.get(0).getClass().getCanonicalName());
-                logger.log(Level.FINE,"element value is "+x.get(0));
+                logger.log(Level.FINE, "element class is {0}", x.get(0).getClass().getCanonicalName());
+                logger.log(Level.FINE, "element value is {0}", x.get(0));
                 PrizeList toAdd=new PrizeList((String)listName, (List<Map>) map.get(listName), logger);
                 prizeLists.put((String)listName, toAdd);
                 logger.log(Level.INFO, "added prizelist {0} with {1} alternatives", new Object[]{listName, toAdd.alternativePrizes.size()});
@@ -156,9 +145,9 @@ public class PoK extends JavaPlugin implements Listener {
         for (Map<?,?> map:gameModeMap) {
             logger.fine("parsing game mode");
             for (Object gameModeName:map.keySet()) {
-                logger.info("parsing gameMode "+gameModeName);
-                logger.log(Level.FINE,"class is "+map.get(gameModeName).getClass().getCanonicalName());
-                logger.log(Level.FINE,"value is "+map.get(gameModeName));
+                logger.log(Level.INFO, "parsing gameMode {0}", gameModeName);
+                logger.log(Level.FINE, "class is {0}", map.get(gameModeName).getClass().getCanonicalName());
+                logger.log(Level.FINE, "value is {0}", map.get(gameModeName));
                 GameMode toAdd=new GameMode((String)gameModeName, (Map)(map.get(gameModeName)), logger);
                 gameModes.put((String) gameModeName, toAdd);
                 logger.log(Level.INFO, "parsed gameMode: {0}", toAdd.toString());
@@ -187,8 +176,11 @@ public class PoK extends JavaPlugin implements Listener {
     public ReturnCode startGameMode(String modeName, String qaFileName) {
         cancelGame();
         currentMode=gameModes.get(modeName);
-        if (currentMode==null || currentMode.isDisabled()) {
+        if (currentMode==null) {
             return new ReturnCode(false, "cannot enter mode "+ modeName);
+        }
+        if (currentMode.isDisabled()) {
+            return new ReturnCode(false, "Mode "+modeName+" is disabled: "+currentMode.disabledReason);
         }
         
         File inputFile;
@@ -204,13 +196,13 @@ public class PoK extends JavaPlugin implements Listener {
         if (!inputFile.exists()) {
             return new ReturnCode(false, "File "+inputFile.getName()+" not found");
         }
-        logger.info("Using input file "+inputFile+" to start mode "+modeName);
+        logger.log(Level.INFO, "Using input file {0} to start mode {1}", new Object[]{inputFile, modeName});
         qaList=new QAList(inputFile, logger, currentMode);
         if (currentMode.wantsRandomize())
             qaList.randomize();
-        //Bukkit.broadcast(getPrefix()+currentMode.startMessage, "poc.answer."+modeName);
-        Bukkit.broadcastMessage(getPrefix()+currentMode.startMessage);
+        broadcastToPlayers(currentMode.startMessage);
         
+        questionValid=false;
         numAsked=0;
         scores=new Scoreboard();
         scheduleNextAsker();
@@ -218,6 +210,7 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     public ReturnCode nextGameMode() {
+        broadcastToPlayers(currentMode.endMessage);
         return startGameMode(currentMode.nextGameMode);
     }
     
@@ -229,21 +222,23 @@ public class PoK extends JavaPlugin implements Listener {
         scheduledTask=getServer().getScheduler().scheduleSyncDelayedTask(this, new Solver(this), currentMode.answerTime*ticksPerMinute);
     }
     
-    public void ask(String s) {
-        Bukkit.broadcastMessage(getPrefix()+currentMode.questionPrefix+s);
+    public void ask() {
+        broadcastToPlayers(currentMode.questionMessage);
         questionValid=true;
         numAnswers=0;
         numAsked++;
-        correctAnswers=new HashSet();
+        correctAnswerers=new HashSet();
         wrongAnswers=new ArrayList();
     }
     
-    public void solve(String s) {
+    public void solve() {
+        String message;
         if (numAnswers==0) {
-            Bukkit.broadcastMessage(getPrefix()+currentMode.expireMessage);
+            message=PlaceHolders.evaluate(currentMode.timeoutMessage, this, logger);
         } else {
-            Bukkit.broadcastMessage(getPrefix()+currentMode.itemMessage);
+            message=PlaceHolders.evaluate(currentMode.itemMessage, this, logger);
         }
+        broadcastToPlayers(message);
         questionValid=false;
         if (numAsked>=currentMode.threshold) {
             distributePrizes();
@@ -251,11 +246,15 @@ public class PoK extends JavaPlugin implements Listener {
     }
     
     public void distributePrizes() {
-        if (scores.getEntries()>0) {
-            String[] winners=scores.bestPlayers(currentMode.numWinners);
-            reward(winners);
-        } else {
-            Bukkit.broadcastMessage(getPrefix()+"Noone won anything this round");
+        if (numAsked>0) {   // This is needed as we are called at the end of
+                            // one round AND at the end of the qa list
+            String message;
+            if (scores.getEntries()>0) {
+                message=PlaceHolders.evaluate(currentMode.rewardMessage, this, logger);
+            } else {
+                message=PlaceHolders.evaluate(currentMode.noRewardMessage, this, logger);
+            }
+            broadcastToPlayers(message);
         }
         numAsked=0;
         scores=new Scoreboard();
@@ -315,21 +314,23 @@ public class PoK extends JavaPlugin implements Listener {
         }
     }
     
-    private void reward(String[] players) {
-        StringBuilder message=new StringBuilder(""+
-                players.length+" winners: ");
-        for (int i=0; i<players.length; i++) {
-            message.append(players[i]);
-            if (i==players.length-2)
-                message.append(" and ");
-            else if (i<players.length-2)
-                message.append(", ");
+    void broadcastToPlayers(String message) {
+        if (message!=null) {
+            message=PlaceHolders.evaluate(message, this, logger);
+            Bukkit.broadcastMessage(currentMode.prefix+message);
         }
-        if (players.length==1)
-            message.append(" gets a "+currentMode.prizeList+" prize");
-        else
-            message.append(" get a "+currentMode.prizeList+" prize each");
-        Bukkit.broadcastMessage(getPrefix()+message);
+    }
+    
+    private String getPlayerList(String[] players) {
+        StringBuilder playerList=new StringBuilder();
+        for (int i=0; i<players.length; i++) {
+            playerList.append(players[i]);
+            if (i==players.length-2)
+                playerList.append(" and ");
+            else if (i<players.length-2)
+                playerList.append(", ");
+        }
+        return playerList.toString();
     }
     
     private void giveStats(CommandSender sender) {
@@ -345,11 +346,11 @@ public class PoK extends JavaPlugin implements Listener {
     // but never allow more than 1 correct answer
     private void handleAnswer(CommandSender sender, String[] args) {
         String name=sender.getName();
-        if (correctAnswers==null) {
+        if (correctAnswerers==null) {
             sender.sendMessage("There is no question pending!");
             return;
         }
-        if (correctAnswers.contains(name)) {
+        if (correctAnswerers.contains(name)) {
             sender.sendMessage("You already answered this question.");
             return;
         }
@@ -364,7 +365,7 @@ public class PoK extends JavaPlugin implements Listener {
         message=getPrefix()+"'"+answer+"' is ";
         boolean correct=qaList.checkAnswer(answer);
         if (correct) {
-            correctAnswers.add(name);
+            correctAnswerers.add(name);
             message+="correct. ";
             if (questionValid && numAnswers<currentMode.answerCount) {
                 message+=" You get a score point.";
@@ -377,7 +378,7 @@ public class PoK extends JavaPlugin implements Listener {
             }
         } else {
             if (!currentMode.allowRetry())
-                correctAnswers.add(name);
+                correctAnswerers.add(name);
             wrongAnswers.add(new Pair(name, answer));
             message+="wrong. Sorry.";
             if (!questionValid) {
@@ -385,5 +386,60 @@ public class PoK extends JavaPlugin implements Listener {
             }
         }
         sender.sendMessage(message);
+    }
+
+    @Override
+    public String valueFor(String placeholder) {
+        if ("answer".equals(placeholder) && qaList.currentQA()!=null) {
+            return qaList.currentQA().getAnswer();
+        }
+        if ("answercount".equals(placeholder)) {
+            return Integer.toString(currentMode.answerCount);
+        }
+        if ("answertime".equals(placeholder)) {
+            return Integer.toString(currentMode.answerCount);
+        }
+        if ("delay".equals(placeholder)) {
+            return Integer.toString(currentMode.delay);
+        }
+        if ("name".equals(placeholder)) {
+            return currentMode.name;
+        }
+        if ("numwinners".equals(placeholder)) {
+            return Integer.toString(currentMode.numWinners);
+        }
+        if ("playercount".equals(placeholder)) {
+            return Integer.toString(correctAnswerers.size());
+        }
+        if ("players".equals(placeholder)) {
+            return getPlayerList(correctAnswerers.toArray(new String[correctAnswerers.size()]));
+        }
+        if ("prizelist".equals(placeholder)) {
+            return currentMode.prizeList;
+        }
+        if ("question".equals(placeholder) && qaList.currentQA()!=null) {
+            return qaList.currentQA().getQuestion();
+        }
+        if ("threshold".equals(placeholder)) {
+            if (currentMode.threshold==GameMode.allThreshold)
+                return "all";
+            return Integer.toString(currentMode.threshold);
+        }
+        if (placeholder!=null && placeholder.startsWith("threshold.")) {
+            if (currentMode.threshold==GameMode.allThreshold)
+                return placeholder.substring(10);
+            return Integer.toString(currentMode.threshold);
+        }
+        if ("scoreboard".equals(placeholder)) {
+            return scores.toString(currentMode.prefix);
+        }
+        if ("winnercount".equals(placeholder)) {
+            return Integer.toString(scores.bestPlayers(currentMode.numWinners).length);
+        }
+        if ("winners".equals(placeholder)) {
+            String[] winners=scores.bestPlayers(currentMode.numWinners);
+            return getPlayerList(winners);
+        }
+        return placeholder.toUpperCase();
     }
 }

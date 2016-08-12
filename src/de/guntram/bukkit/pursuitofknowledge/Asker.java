@@ -32,8 +32,7 @@ public class Asker implements Runnable {
         if (qa==null) {
             Bukkit.broadcastMessage("nextQA returned null??");
         } else {
-            // Bukkit.broadcast(qa.question, "poc.answer");
-            plugin.ask(qa.getQuestion()+" §7("+qa.getShowableAnswer()+")");
+            plugin.ask();
         }
         plugin.scheduleNextAnswerGiver();
     }

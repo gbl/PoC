@@ -26,7 +26,6 @@ public class GameMode {
     String allow2ndTry;
     String filePattern;
     String prefix;
-    String questionPrefix;
     String nextGameMode;
     int threshold;
     String prizeList;
@@ -35,8 +34,11 @@ public class GameMode {
     String scramble;
     String startMessage;
     String endMessage;
+    String questionMessage;
     String itemMessage;
-    String expireMessage;
+    String timeoutMessage;
+    String rewardMessage;
+    String noRewardMessage;
     
     String copyFrom;
     
@@ -52,7 +54,6 @@ public class GameMode {
         allow2ndTry         = cfString(config.get("allow2ndtry"));
         filePattern         = cfString(config.get("filepattern"));
         prefix              = cfString(config.get("prefix"), true);
-        questionPrefix      = cfString(config.get("questionprefix"), true);
         nextGameMode        = cfString(config.get("nextgamemode"));
         threshold           = cfInt(   config.get("threshold"));
         prizeList           = cfString(config.get("prizelist"));
@@ -61,8 +62,11 @@ public class GameMode {
         scramble            = cfString(config.get("scramble"));
         startMessage        = cfString(config.get("startmessage"), true);
         endMessage          = cfString(config.get("endmessage"), true);
+        questionMessage     = cfString(config.get("questionmessage"), true);
         itemMessage         = cfString(config.get("itemmessage"), true);
-        expireMessage       = cfString(config.get("expiremessage"), true);
+        timeoutMessage      = cfString(config.get("timeoutmessage"), true);
+        rewardMessage       = cfString(config.get("rewardmessage"), true);
+        noRewardMessage     = cfString(config.get("norewardmessage"), true);
         copyFrom            = cfString(config.get("copyfrom"));
         
         if (threshold==0 && "all".equals(config.get("threshold")))
@@ -150,7 +154,6 @@ public class GameMode {
         if (allow2ndTry==null)      allow2ndTry     = template.allow2ndTry;
         if (filePattern==null)      filePattern     = template.filePattern;
         if (prefix==null)           prefix          = template.prefix;
-        if (questionPrefix==null)   questionPrefix  = template.questionPrefix;
         if (nextGameMode==null)     nextGameMode    = template.nextGameMode;
         if (threshold==0)           threshold       = template.threshold;
         if (prizeList==null)        prizeList       = template.prizeList;
@@ -159,9 +162,11 @@ public class GameMode {
         if (scramble==null)         scramble        = template.scramble;
         if (startMessage==null)     startMessage    = template.startMessage;
         if (endMessage==null)       endMessage      = template.endMessage;
+        if (questionMessage==null)  questionMessage = template.questionMessage;
         if (itemMessage==null)      itemMessage     = template.itemMessage;
-        if (expireMessage==null)    expireMessage   = template.expireMessage;
-        
+        if (timeoutMessage==null)   timeoutMessage  = template.timeoutMessage;
+        if (rewardMessage==null)    rewardMessage   = template.rewardMessage;
+        if (noRewardMessage==null)  noRewardMessage = template.noRewardMessage;
         
         isCopying=false;
         copyFromResolved=true;
@@ -180,8 +185,11 @@ public class GameMode {
         if (scramble==null)         scramble        = "none";
         if (startMessage==null)     startMessage    = "";
         if (endMessage==null)       endMessage      = "";
-        if (itemMessage==null)      itemMessage     = "";
-        if (expireMessage==null)    expireMessage   = "";
+        if (questionMessage==null)  questionMessage = "%question%";
+        if (itemMessage==null)      itemMessage     = "%answer%";
+        if (timeoutMessage==null)   timeoutMessage  = "%answer%";
+        if (rewardMessage==null)    rewardMessage   = "";
+        if (noRewardMessage==null)  noRewardMessage = "";
 
         if (filePattern==null)      { disabledReason="no file pattern"; }
         if (prizeList==null)        { disabledReason="no prize list given"; }
@@ -198,7 +206,6 @@ public class GameMode {
                 "answercount: "     +answerCount        +", "+
                 "filepattern: "     +filePattern        +", "+
                 "prefix: "          +prefix             +", "+
-                "questionprefix: "  +questionPrefix     +", "+
                 "nextgamemode: "    +nextGameMode       +", "+
                 "threshold: "       +threshold          +", "+
                 "prizelist: "       +prizeList          +", "+
@@ -207,7 +214,10 @@ public class GameMode {
                 "scramble: "        +scramble           +", "+
                 "startmessage: "    +startMessage       +", "+
                 "endmessage: "      +endMessage         +", "+
+                "questionmessage: " +questionMessage    +", "+
                 "itemmessage: "     +itemMessage        +", "+
-                "expiremessage: "   +expireMessage      +".";
+                "timeoutmessage: "  +timeoutMessage     +", "+
+                "rewardmessage: "   +rewardMessage      +", "+
+                "norewardmessage: " +noRewardMessage    +".";
     }
 }

@@ -23,7 +23,7 @@ public class Solver implements Runnable {
     public void run() {
         QA qa=plugin.getQAList().currentQA();
         // Bukkit.broadcast(qa.answer, "poc.answer");
-        plugin.solve(qa.getShowableAnswer());
+        plugin.solve();
         if (!plugin.getQAList().hasMoreQuestions()) {
             plugin.distributePrizes();
             plugin.nextGameMode();
