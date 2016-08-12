@@ -204,9 +204,9 @@ public class QAList {
         for (;;) {
             if ((start=line.indexOf('{'))!=-1
             &&  (end  =line.indexOf('}'))!=-1) {
-                logger.log(Level.INFO, "first part {0}", line.substring(0, start));
-                logger.log(Level.INFO, "to scramble: {0}", line.substring(start+1, end));
-                logger.log(Level.INFO, "last part {0}", line.substring(end+1));
+                logger.log(Level.FINE, "first part {0}", line.substring(0, start));
+                logger.log(Level.FINE, "to scramble: {0}", line.substring(start+1, end));
+                logger.log(Level.FINE, "last part {0}", line.substring(end+1));
                 line=line.substring(0, start)+
                      scramble(line.substring(start+1, end))+
                      line.substring(end+1);
