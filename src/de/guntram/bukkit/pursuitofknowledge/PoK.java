@@ -19,7 +19,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 class Pair {
@@ -47,6 +49,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     private int numAsked;                   // how many questions where asked in the current scoreboard?
     private Set<String> correctAnswerers;
     private List<Pair> wrongAnswers;
+    private String[] winners;
 
     @Override
     public void onEnable() {
@@ -250,6 +253,14 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                             // one round AND at the end of the qa list
             String message;
             if (scores.getEntries()>0) {
+                winners=scores.bestPlayers(currentMode.numWinners);
+                PrizeList list=prizeLists.get(currentMode.prizeList);
+                for (String winner:winners) {
+                    Player player=Bukkit.getPlayer(winner);
+                    Prize prize=list.getRandomPrize();
+                    for (ItemStack stack:prize.getItems())
+                        player.getInventory().addItem(stack);
+                }
                 message=PlaceHolders.evaluate(currentMode.rewardMessage, this, logger);
             } else {
                 message=PlaceHolders.evaluate(currentMode.noRewardMessage, this, logger);
@@ -434,10 +445,9 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
             return scores.toString(currentMode.prefix);
         }
         if ("winnercount".equals(placeholder)) {
-            return Integer.toString(scores.bestPlayers(currentMode.numWinners).length);
+            return Integer.toString(winners.length);
         }
         if ("winners".equals(placeholder)) {
-            String[] winners=scores.bestPlayers(currentMode.numWinners);
             return getPlayerList(winners);
         }
         return placeholder.toUpperCase();

@@ -5,22 +5,80 @@
  */
 package de.guntram.bukkit.pursuitofknowledge;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+
 /**
  *
  * @author gbl
  */
 public class Prize {
-    int probability;
-    String unparsedItemStackList;
+    private int probability;
+    private List<ItemStack> items;
+    private static Pattern pattern;
     // List<ItemStack> components;
 
-    Prize(String prizeDescriptor) {
+    Prize(String prizeDescriptor, Logger logger) {
         int pos;
         
-        for (pos=0; pos<prizeDescriptor.length() 
-                    && Character.isDigit(prizeDescriptor.charAt(pos)); pos++)
-            ;
-        probability=Integer.parseInt(prizeDescriptor.substring(0, pos));
-        unparsedItemStackList=prizeDescriptor.substring(pos);
+        if (pattern==null) {
+            pattern=Pattern.compile("(\\d+)(:(\\d+))?(\\((\\d+)\\))?");
+        }
+        String[] parts=prizeDescriptor.split(" ");
+        items=new ArrayList<>(parts.length-1);
+        try {
+            probability=Integer.parseInt(parts[0]);
+        } catch (NumberFormatException ex) {
+            probability=1;
+        }
+        for (int i=1; i<parts.length; i++) {
+            Matcher matcher=pattern.matcher(parts[i]);
+            if (matcher.matches()) {
+                String type=matcher.group(1);
+                String subtype=matcher.group(3);
+                String amount=matcher.group(5);
+                
+                Material material;
+                try {
+                    material=Material.getMaterial(Integer.parseInt(type));
+                } catch (NumberFormatException ex) {
+                    material=Material.getMaterial(type);
+                }
+                if (material==null) {
+                    logger.log(Level.WARNING, "Material {0} not recognized", type);
+                    continue;
+                }
+                
+                int damage=0;
+                if (subtype!=null) try {
+                    damage=Integer.parseInt(subtype);
+                } catch (NumberFormatException ex) {
+                }
+                
+                int quantity=1;
+                if (amount!=null) try {
+                    quantity=Integer.parseInt(amount);
+                } catch (NumberFormatException ex) {
+                }
+                
+                logger.log(Level.INFO, "creating stack from "+material.name()+ " subtype "+damage+" amount "+quantity);
+                ItemStack stack=new ItemStack(material, quantity, (short) damage);
+                items.add(stack);
+            }
+        }
+    }
+    
+    public int getProbability() {
+        return probability;
+    }
+    
+    public List<ItemStack> getItems() {
+        return items;
     }
 }
