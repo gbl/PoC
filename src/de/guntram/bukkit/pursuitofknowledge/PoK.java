@@ -145,12 +145,12 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
         for (Map<?,?> map:gameModeMap) {
             logger.fine("parsing game mode");
             for (Object gameModeName:map.keySet()) {
-                logger.log(Level.INFO, "parsing gameMode {0}", gameModeName);
+                logger.log(Level.FINE, "parsing gameMode {0}", gameModeName);
                 logger.log(Level.FINE, "class is {0}", map.get(gameModeName).getClass().getCanonicalName());
                 logger.log(Level.FINE, "value is {0}", map.get(gameModeName));
                 GameMode toAdd=new GameMode((String)gameModeName, (Map)(map.get(gameModeName)), logger);
                 gameModes.put((String) gameModeName, toAdd);
-                logger.log(Level.INFO, "parsed gameMode: {0}", toAdd.toString());
+                logger.log(Level.FINE, "parsed gameMode: {0}", toAdd.toString());
             }
         }
         Collection<GameMode> vals=gameModes.values();
@@ -165,7 +165,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 logger.log(Level.WARNING, "{0} disabled: {1}", new Object[]{gameMode.name, gameMode.disabledReason});
         }
         for (GameMode gameMode:vals) {
-            logger.log(Level.INFO, "finished gameMode: {0}", gameMode.toString());
+            logger.log(Level.INFO, "Loaded GameMode: {0}", gameMode.toString());
         }
     }
     

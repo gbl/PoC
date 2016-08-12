@@ -137,7 +137,7 @@ public class QAList {
      */
     public QA nextQA() {
         curPattern=null;
-        logger.info("nextQA: currentquestion="+currentQuestion+" and have "+entries.size()+"entries");
+        logger.fine("nextQA: currentquestion="+currentQuestion+" and have "+entries.size()+"entries");
         currentQuestion++;
         if (currentQuestion>=entries.size()) {
             curPattern=null;
