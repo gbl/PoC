@@ -315,7 +315,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     }
     
     void broadcastToPlayers(String message) {
-        if (message!=null) {
+        if (message!=null && !message.equals("")) {
             message=PlaceHolders.evaluate(message, this, logger);
             Bukkit.broadcastMessage(currentMode.prefix+message);
         }
