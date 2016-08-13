@@ -15,13 +15,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 class Pair {
@@ -50,6 +53,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     private Set<String> correctAnswerers;
     private List<Pair> wrongAnswers;
     private String[] winners;
+    private Economy economy;
 
     @Override
     public void onEnable() {
@@ -66,6 +70,18 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
             logger.log(Level.FINER, "config key: {0} issection? : {1}", new Object[]{s, config.isConfigurationSection(s)});
         }
 
+        RegisteredServiceProvider<Economy> economyProvider;
+        try {
+            economyProvider=getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        } catch (NoClassDefFoundError err) {
+            economyProvider=null;
+        }
+        if (economyProvider==null) {
+            economy=null;
+            logger.log(Level.WARNING, "Vault not found. Won't be able to give money to players.");
+        } else {
+            economy=economyProvider.getProvider();
+        }
         loadPrizes();
         loadGameModes();
         startGameMode("default");
@@ -258,8 +274,21 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 for (String winner:winners) {
                     Player player=Bukkit.getPlayer(winner);
                     Prize prize=list.getRandomPrize();
-                    for (ItemStack stack:prize.getItems())
-                        player.getInventory().addItem(stack);
+                    for (ItemStack stack:prize.getItems()) {
+                        if (stack.getType() == Material.AIR) {
+                            if (economy!=null) {
+                                economy.depositPlayer(player, stack.getAmount());
+                                player.sendMessage("You got paid "+stack.getAmount()+" money units.");
+                            } else {
+                                player.sendMessage("You would have gotten "+stack.getAmount()+" money units, but Vault isn't installed.");
+                            }
+                        } else {
+                            // addItem may change stack.amount so save/restore it
+                            int oldAmount=stack.getAmount();
+                            player.getInventory().addItem(stack);
+                            stack.setAmount(oldAmount);
+                        }
+                    }
                 }
                 message=PlaceHolders.evaluate(currentMode.rewardMessage, this, logger);
             } else {

@@ -12,3 +12,4 @@ commands:
         description: Manage the PoK plugin
         usage: /pok stats|answer|mode <modename> (<filename>)|reload
         permission: PoK.admin
+softdepend: [Vault]
