@@ -129,7 +129,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 return true;
             }
         }
-        if (commandName.equalsIgnoreCase("ans")) {
+        if (commandName.equalsIgnoreCase("answer")) {
             handleAnswer(sender, args);
             return true;
         }

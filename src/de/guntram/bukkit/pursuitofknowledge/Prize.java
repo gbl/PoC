@@ -67,7 +67,7 @@ public class Prize {
                 } catch (NumberFormatException ex) {
                 }
                 
-                logger.log(Level.INFO, "creating stack from "+material.name()+ " subtype "+damage+" amount "+quantity);
+                logger.log(Level.FINE, "creating stack from "+material.name()+ " subtype "+damage+" amount "+quantity);
                 ItemStack stack=new ItemStack(material, quantity, (short) damage);
                 items.add(stack);
             }

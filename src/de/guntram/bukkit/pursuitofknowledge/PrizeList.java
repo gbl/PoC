@@ -35,7 +35,7 @@ public class PrizeList {
         
         for (Map entry:entries) {
             for (Object prizeDescriptor:entry.values()) {
-                logger.log(Level.WARNING, "adding prize: {0}", new Object[]{prizeDescriptor});
+                logger.log(Level.INFO, "adding prize: {0}", new Object[]{prizeDescriptor});
                 Prize prize=new Prize((String) prizeDescriptor, logger);
                 this.add(prize);
             }
