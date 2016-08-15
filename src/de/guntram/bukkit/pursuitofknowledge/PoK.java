@@ -273,6 +273,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 PrizeList list=prizeLists.get(currentMode.prizeList);
                 for (String winner:winners) {
                     Player player=Bukkit.getPlayer(winner);
+                    // TODO: Player may be null if they logged out. Then don't try giving them stuff.
                     Prize prize=list.getRandomPrize();
                     for (ItemStack stack:prize.getItems()) {
                         if (stack.getType() == Material.AIR) {
