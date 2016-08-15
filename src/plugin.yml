@@ -3,7 +3,7 @@ name: PursuitOfKnowledge
 main: de.guntram.bukkit.pursuitofknowledge.PoK
 version: 0.11
 commands:
-    ans:
+    answer:
         description: Answer the last question.
         usage: /answer <text>
         permission: pok.answer

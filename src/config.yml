@@ -29,7 +29,7 @@ gamemodes:
       threshold: 1               # Give a prize to the "winning" player after every question
       prizelist: rocks
       numwinners: 1              # Only the "best" player wins a prize.
-      questionmessage: "&2Trivia Time! &6Use /ans to answer: &5%question% &7(%answer%)"
+      questionmessage: "&2Trivia Time! &6Use /answer to answer: &5%question% &7(%answer%)"
       itemmessage: "The correct answer was %answer%, found by %players%."
       timeoutmessage: "Noone found the answer, which was %answer%."
       rewardmessage: "%winners% get%winners.s% a box of %prizelist% each."
