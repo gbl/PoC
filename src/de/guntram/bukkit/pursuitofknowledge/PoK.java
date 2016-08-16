@@ -96,6 +96,8 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                if (!result.success) {
                    logger.warning(result.message);
                    sender.sendMessage(result.message);
+               } else {
+                   sender.sendMessage("PoK entering mode "+args[1]);
                }
                return true;
             }
@@ -209,7 +211,12 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 return new ReturnCode(false, "No files found matching "+ currentMode.filePattern);
             }
         } else {
-            inputFile=new File(qaFileName);
+            if (qaFileName.indexOf('/')>=0
+            ||  qaFileName.indexOf('\\')>=0
+            ||  qaFileName.indexOf(':')>=0) {
+                return new ReturnCode(false, "No path specification allowed for security reasons");
+            }
+            inputFile=new File(getDataFolder(), qaFileName);
         }
 
         if (!inputFile.exists()) {
@@ -273,7 +280,9 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 PrizeList list=prizeLists.get(currentMode.prizeList);
                 for (String winner:winners) {
                     Player player=Bukkit.getPlayer(winner);
-                    // TODO: Player may be null if they logged out. Then don't try giving them stuff.
+                    // Player may be null if they logged out. Then don't try giving them stuff.
+                    if (player==null)
+                        continue;
                     Prize prize=list.getRandomPrize();
                     for (ItemStack stack:prize.getItems()) {
                         if (stack.getType() == Material.AIR) {
@@ -376,15 +385,13 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     
     private void giveStats(CommandSender sender) {
         sender.sendMessage("Running mode "+currentMode.name);
+        sender.sendMessage("Asked "+(qaList.getAskedQuestions()) +" of "+qaList.getTotalQuestions()+" questions");
         sender.sendMessage("Prize "+currentMode.prizeList+" given after "+currentMode.threshold+" questions, current: "+numAsked);
         sender.sendMessage("A maximum of "+currentMode.answerCount+" player(s) get a score point, current: "+numAnswers);
         sender.sendMessage(""+currentMode.numWinners+" player(s) will win a prize");
         sender.sendMessage("current scores: "+scores.toString());
     }
     
-    // TODO: prevent a player from answering twice to the same question
-    // maybe: allow them to correct themselves (gamemode option?)
-    // but never allow more than 1 correct answer
     private void handleAnswer(CommandSender sender, String[] args) {
         String name=sender.getName();
         if (correctAnswerers==null) {

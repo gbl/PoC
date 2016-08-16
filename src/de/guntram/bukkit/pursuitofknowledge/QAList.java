@@ -183,6 +183,14 @@ public class QAList {
         return currentQuestion < entries.size()-1;
     }
     
+    public int getAskedQuestions() {
+        return currentQuestion+1;
+    }
+    
+    public int getTotalQuestions() {
+        return (entries==null ? 0 : entries.size());
+    }
+    
     private static String scramble(String line) {
         StringBuilder sb=new StringBuilder(line.length());
         char[] ary=line.toCharArray();
