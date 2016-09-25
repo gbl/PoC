@@ -131,17 +131,32 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 return true;
             }
         }
+        
+        if (args.length==1 && args[0].equalsIgnoreCase("reload")) {
+            if (sender.hasPermission("pok.admin")) {
+                loadPrizes();
+                loadGameModes();
+                sender.sendMessage("Loaded "+prizeLists.size()+" prizes and "+gameModes.size()+" game modes.");
+                sender.sendMessage("Check system log if this sounds wrong.");
+                startGameMode("default");
+            } else {
+                sender.sendMessage("You're lacking the pok.admin permission");
+            }
+            return true;
+        }
+        
         if (commandName.equalsIgnoreCase("answer")) {
             handleAnswer(sender, args);
             return true;
         }
+        sender.sendMessage("command "+args[0]+" unknown");
         return false;
     }
 
     private void loadPrizes() {
         prizeLists=new HashMap();
         List<Map<?,?>> prizeMap=config.getMapList("prizelists");
-        logger.log(Level.INFO, "prize map has {0} entries", prizeMap.size());
+        logger.log(Level.FINE, "prize map has {0} entries", prizeMap.size());
         
         for (Map<?,?> map:prizeMap) {
             logger.fine("parsing next prize map");
@@ -183,10 +198,10 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
         }
         for (GameMode gameMode:vals) {
             if (gameMode.isDisabled())
-                logger.log(Level.WARNING, "{0} disabled: {1}", new Object[]{gameMode.name, gameMode.disabledReason});
+                logger.log(Level.WARNING, "GameMode {0} disabled: {1}", new Object[]{gameMode.name, gameMode.disabledReason});
         }
         for (GameMode gameMode:vals) {
-            logger.log(Level.INFO, "Loaded GameMode: {0}", gameMode.toString());
+            logger.log(Level.INFO, "Loaded GameMode: {0}", gameMode.name);
         }
     }
     
@@ -288,6 +303,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                         if (stack.getType() == Material.AIR) {
                             if (economy!=null) {
                                 economy.depositPlayer(player, stack.getAmount());
+                                // TODO make this configurable
                                 player.sendMessage("You got paid "+stack.getAmount()+" money units.");
                             } else {
                                 player.sendMessage("You would have gotten "+stack.getAmount()+" money units, but Vault isn't installed.");
