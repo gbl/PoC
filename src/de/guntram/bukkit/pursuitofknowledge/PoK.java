@@ -149,7 +149,10 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
             handleAnswer(sender, args);
             return true;
         }
-        sender.sendMessage("command "+args[0]+" unknown");
+        if (args.length==0)
+            sender.sendMessage("Give a command - stats, reload, answer, mode");
+        else
+            sender.sendMessage("command "+args[0]+" unknown");
         return false;
     }
 
