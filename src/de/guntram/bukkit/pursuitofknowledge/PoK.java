@@ -45,7 +45,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     private FileConfiguration config;
     private Logger logger;
     private int scheduledTask;
-    private final int ticksPerMinute=20;    // correct: 20
+    private final int ticksPerSecond=20;    // correct: 20
     private boolean questionValid;          // Can a question be answered rn, i.e. no timeout?
     private Scoreboard scores;
     private int numAnswers;                 // how many answers for the current question?
@@ -259,11 +259,11 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     }
     
     public void scheduleNextAsker() {
-        scheduledTask = getServer().getScheduler().scheduleSyncDelayedTask(this, new Asker(this), currentMode.delay*ticksPerMinute);
+        scheduledTask = getServer().getScheduler().scheduleSyncDelayedTask(this, new Asker(this), currentMode.delay*ticksPerSecond);
     }
     
     public void scheduleNextAnswerGiver() {
-        scheduledTask=getServer().getScheduler().scheduleSyncDelayedTask(this, new Solver(this), currentMode.answerTime*ticksPerMinute);
+        scheduledTask=getServer().getScheduler().scheduleSyncDelayedTask(this, new Solver(this), currentMode.answerTime*ticksPerSecond);
     }
     
     public void ask() {
