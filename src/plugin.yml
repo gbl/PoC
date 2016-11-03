@@ -1,7 +1,7 @@
 ## YAML Template.
 name: PursuitOfKnowledge
 main: de.guntram.bukkit.pursuitofknowledge.PoK
-version: 0.13.2
+version: 0.14
 commands:
     answer:
         description: Answer the last question.
@@ -10,6 +10,7 @@ commands:
         permission-message: No right to answer
     pok:
         description: Manage the PoK plugin
-        usage: /pok stats|answer|mode <modename> (<filename>)|reload
+        usage: /pok stats|answer|mode <modename> (<filename>)|reload|lq|off
         permission: pok.admin
+        permission-message: No access to pok commands
 softdepend: [Vault]

@@ -112,7 +112,9 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
             ) {
                 if (sender.hasPermission("pok.seeanswer")) {
                     QA qa=qaList.currentQA();
-                    if (qa!=null) {
+                    if (scheduledTask==-1) {
+                        sender.sendMessage("PoK is turned off - use pok mode to start it");
+                    } else if (qa!=null) {
                         String a, sa;
                         sender.sendMessage("Last question was: "+qa.getQuestion());
                         sender.sendMessage("The answer is: "+(sa=qa.getShowableAnswer()));
@@ -130,19 +132,19 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 }
                 return true;
             }
-        }
-        
-        if (args.length==1 && args[0].equalsIgnoreCase("reload")) {
-            if (sender.hasPermission("pok.admin")) {
+            if (args.length==1 && args[0].equalsIgnoreCase("reload")) {
                 loadPrizes();
                 loadGameModes();
                 sender.sendMessage("Loaded "+prizeLists.size()+" prizes and "+gameModes.size()+" game modes.");
                 sender.sendMessage("Check system log if this sounds wrong.");
                 startGameMode("default");
-            } else {
-                sender.sendMessage("You're lacking the pok.admin permission");
+                return true;
             }
-            return true;
+            if (args.length==1 && args[0].equalsIgnoreCase("off")) {
+                cancelGame();
+                sender.sendMessage("PoK is turned off now");
+                return true;
+            }
         }
         
         if (commandName.equalsIgnoreCase("answer")) {
@@ -150,7 +152,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
             return true;
         }
         if (args.length==0)
-            sender.sendMessage("Give a command - stats, reload, answer, mode");
+            sender.sendMessage("Give a command - stats, reload, answer, mode, off");
         else
             sender.sendMessage("command "+args[0]+" unknown");
         return false;
@@ -403,6 +405,10 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     }
     
     private void giveStats(CommandSender sender) {
+        if (scheduledTask==-1) {
+            sender.sendMessage("PoK is turned off right now");
+            return;
+        }
         sender.sendMessage("Running mode "+currentMode.name);
         sender.sendMessage("Asked "+(qaList.getAskedQuestions()) +" of "+qaList.getTotalQuestions()+" questions");
         sender.sendMessage("Prize "+currentMode.prizeList+" given after "+currentMode.threshold+" questions, current: "+numAsked);
