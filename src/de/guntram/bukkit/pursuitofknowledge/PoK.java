@@ -388,7 +388,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     void broadcastToPlayers(String message) {
         if (message!=null && !message.equals("")) {
             message=PlaceHolders.evaluate(message, this, logger);
-            Bukkit.broadcast(currentMode.prefix+message, "pok.answer");
+            Bukkit.broadcast(currentMode.prefix+message+"§r", "pok.answer");
         }
     }
     
@@ -458,7 +458,7 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
                 message=message+" And too late as well.";
             }
         }
-        sender.sendMessage(message);
+        sender.sendMessage(message+"§r");
     }
 
     @Override
