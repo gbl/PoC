@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 class QA {
     private String question;
@@ -138,18 +139,26 @@ public class QAList {
     public QA nextQA() {
         curPattern=null;
         logger.fine("nextQA: currentquestion="+currentQuestion+" and have "+entries.size()+"entries");
-        currentQuestion++;
-        if (currentQuestion>=entries.size()) {
-            curPattern=null;
-            return null;
+        for (;;) {
+            String answer=null;
+            try {
+                currentQuestion++;
+                if (currentQuestion>=entries.size()) {
+                    curPattern=null;
+                    return null;
+                }
+                entries.get(currentQuestion).setUsed();
+                answer=entries.get(currentQuestion).getAnswer();
+                if (!answer.equals(answer.toLowerCase()))
+                    curPattern=Pattern.compile(answer);
+                else
+                    curPattern=Pattern.compile(answer, Pattern.CASE_INSENSITIVE);
+                return entries.get(currentQuestion);
+            } catch (PatternSyntaxException ex) {
+                logger.log(Level.WARNING, "Bad pattern syntax: {0}", answer);
+                continue;
+            }
         }
-        entries.get(currentQuestion).setUsed();
-        String answer=entries.get(currentQuestion).getAnswer();
-        if (!answer.equals(answer.toLowerCase()))
-            curPattern=Pattern.compile(answer);
-        else
-            curPattern=Pattern.compile(answer, Pattern.CASE_INSENSITIVE);
-        return entries.get(currentQuestion);
     }
     
     /**
