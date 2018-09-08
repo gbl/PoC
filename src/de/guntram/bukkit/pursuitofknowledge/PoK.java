@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -61,6 +64,8 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
         questionValid=false;
 
         logger=getLogger();
+        logger.setLevel(Level.INFO);
+        logger.log(Level.INFO, "This plugin contains code from https://github.com/EsotericSoftware/wildcard. Please see LICENSE.esotericsoftware in the plugin config directory.");
         saveDefaultConfig();
         copySampleFiles();
         
@@ -71,16 +76,22 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
         }
 
         RegisteredServiceProvider<Economy> economyProvider;
-        try {
-            economyProvider=getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-        } catch (NoClassDefFoundError err) {
-            economyProvider=null;
-        }
-        if (economyProvider==null) {
-            economy=null;
-            logger.log(Level.WARNING, "Vault not found. Won't be able to give money to players.");
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            logger.log(Level.INFO, "Vault not found. Won't be able to give money to players.");
         } else {
-            economy=economyProvider.getProvider();
+            try {
+                economyProvider=getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+                if (economyProvider==null) {
+                    economy=null;
+                    logger.log(Level.WARNING, "Vault found no economy provider. Won't be able to give money to players.");
+                } else {
+                    economy=economyProvider.getProvider();
+                }
+            } catch (NoClassDefFoundError err) {
+                logger.log(Level.WARNING, "getRegistration Economy.class: {0}", err.getMessage());
+                economyProvider=null;
+                economy=null;
+            }
         }
         loadPrizes();
         loadGameModes();
@@ -357,12 +368,24 @@ public class PoK extends JavaPlugin implements Listener, PlaceHolderProvider {
     }
     
     private void copySampleFiles() {
-        // TODO: search jar for *.txt and copy all of them
-        copySampleFile("default1.txt");
-        copySampleFile("event-halloween.txt");
-        copySampleFile("test.txt");
-        copySampleFile("scrambleall.txt");
-        copySampleFile("scrambleline.txt");
+        
+        String jarFileName = new File(PoK.class.getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getPath()).getPath();
+        try (ZipFile zipFile = new ZipFile(jarFileName)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry=entries.nextElement();
+                if (entry.isDirectory())
+                    continue;
+                String entryName=entry.getName();
+                if (entryName.toUpperCase().startsWith("LICENSE") || entryName.endsWith(".txt"))
+                    copySampleFile(entryName);
+            }
+        } catch (IOException ex) {
+            this.getLogger().log(Level.WARNING, "Cannot get sample files from "+jarFileName, ex);
+        }
     }
     
     private void copySampleFile(String name) {

@@ -1,7 +1,8 @@
 ## YAML Template.
 name: PursuitOfKnowledge
 main: de.guntram.bukkit.pursuitofknowledge.PoK
-version: 0.142
+version: 1.13
+api-version: 1.13
 commands:
     answer:
         description: Answer the last question.

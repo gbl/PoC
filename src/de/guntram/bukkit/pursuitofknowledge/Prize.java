@@ -46,9 +46,9 @@ public class Prize {
                 
                 Material material;
                 try {
-                    material=Material.getMaterial(Integer.parseInt(type));
-                } catch (NumberFormatException ex) {
-                    material=Material.getMaterial(type);
+                    material=Material.getMaterial(type.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                    material=null;
                 }
                 if (material==null) {
                     logger.log(Level.WARNING, "Material {0} not recognized", type);
@@ -67,7 +67,7 @@ public class Prize {
                 } catch (NumberFormatException ex) {
                 }
                 
-                logger.log(Level.FINE, "creating stack from "+material.name()+ " subtype "+damage+" amount "+quantity);
+                logger.log(Level.FINE, "creating stack from {0} subtype {1} amount {2}", new Object[]{material.name(), damage, quantity});
                 ItemStack stack=new ItemStack(material, quantity, (short) damage);
                 items.add(stack);
             }

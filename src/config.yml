@@ -5,19 +5,19 @@ prizelists:
 # 9% for 5 obsidian
 # 1% for 1 bedrock
 # The numbers don't have to add up to 100, they're just relative frequencies of occurence
-      - stones: "70 1:3(10) 1:5(10) 1:1(20)"
-      - bricks: "20 45(64)"
-      - obsidian: "9 49(5)"
-      - bedrock: "1 7(1)"
+      - stones:   "70 DIORITE(10) ANDESITE(10) GRANITE(20)"
+      - bricks:   "20 BRICK(64)"
+      - obsidian: "9 OBSIDIAN(5)"
+      - bedrock:  "1 BEDROCK(1)"
   - gems:
 # 1 in 5 cases gives the player 5 emeralds, 3 in 5 cases is one diamond, and 1 in 5 is $1000:
-      - emerald: "1 388(5)"
-      - diamond: "3 264(1)"
-      - money: "1 0(1000)"
+      - emerald: "1 EMERALD(5)"
+      - diamond: "3 DIAMOND(1)"
+      - money:   "1 AIR(1000)"
   - money:
-      - standard: "90 0(100)"
-      - lucky: "9 AIR(1000)"
-      - jackpot: "1 AIR(10000)"
+      - standard: "90 AIR(100)"
+      - lucky:    "9 AIR(1000)"
+      - jackpot:  "1 AIR(10000)"
 gamemodes:
   - default:
       delay: 120                 # seconds between questions - 2 minutes

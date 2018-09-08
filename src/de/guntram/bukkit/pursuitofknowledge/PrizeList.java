@@ -5,9 +5,9 @@
  */
 package de.guntram.bukkit.pursuitofknowledge;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,12 +17,12 @@ import java.util.logging.Logger;
  */
 public class PrizeList {
     String name;
-    Vector<Prize> alternativePrizes;
+    List<Prize> alternativePrizes;
     int probabilitySum;
     
     private void init(String name) {
         this.name=name;
-        alternativePrizes=new Vector();
+        alternativePrizes=new ArrayList<>();
         probabilitySum=0;
     }
     
